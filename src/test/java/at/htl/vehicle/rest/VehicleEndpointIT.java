@@ -3,6 +3,7 @@ package at.htl.vehicle.rest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.ws.rs.client.Client;
@@ -25,7 +26,27 @@ public class VehicleEndpointIT {
     }
 
     @Test
-    public void fetchVehicle(){
+    public void crud(){
+        Response response = this.target.request(MediaType.APPLICATION_JSON).get();
+        assertThat(response.getStatus(), is(200));
+        JsonArray payload = response.readEntity(JsonArray.class);
+        System.out.println("payload = " + payload);
+
+        JsonObject vehicle = payload.getJsonObject(0);
+        assertThat(vehicle.getString("brand"),equalTo("Opel 42"));
+        assertThat(vehicle.getString("type"), startsWith("Commodore"));
+
+        // GET with id
+        JsonObject dedicatedVehicle = this.target.path("43").request(MediaType.APPLICATION_JSON)
+                .get(JsonObject.class);
+        assertThat(dedicatedVehicle.getString("brand"), containsString("43"));
+        assertThat(dedicatedVehicle.getString("brand"), equalTo("Opel 43"));
+
+        Response deleteResponse = this.target.path("42").request(MediaType.APPLICATION_JSON).delete();
+        assertThat(deleteResponse.getStatus(), is(204));
+    }
+
+    /*public void fetchVehicle(){
         Response response = this.target.request(MediaType.APPLICATION_JSON).get();
         assertThat(response.getStatus(),is(200));
         JsonArray payload = response.readEntity(JsonArray.class);
@@ -34,5 +55,5 @@ public class VehicleEndpointIT {
         JsonObject vehicle = payload.getJsonObject(0);
         assertThat(vehicle.getString("brand"), is("Opel 42"));
         assertThat(vehicle.getString("type"), is("Commodore"));
-    }
+    }*/
 }
